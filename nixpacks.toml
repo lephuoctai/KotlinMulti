@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["jdk17", "gradle"] # Bảo Vercel chuẩn bị sẵn Java 17 và Gradle
+
+[phases.build]
+cmds = ["./gradlew :composeApp:wasmJsBrowserDistribution"] # Lệnh build Kotlin của ông
