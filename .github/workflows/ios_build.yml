@@ -1,32 +1,89 @@
-name: iOS Framework Check (No Apple ID)
+# name: iOS Framework Check (No Apple ID)
+
+# on:
+#   push:
+#     branches: [ "main", "master" ]
+
+# jobs:
+#   check-framework:
+#     runs-on: macos-latest # Bắt buộc dùng macOS để có bộ biên dịch cho iOS
+
+#     steps:
+#       - name: Checkout Project
+#         uses: actions/checkout@v4
+
+#       - name: Setup Java 17
+#         uses: actions/setup-java@v4
+#         with:
+#           java-version: '17' 
+#           distribution: 'temurin'
+#           cache: gradle
+
+#       - name: Grant Execute Permission
+#         run: chmod +x gradlew
+
+#       - name: Build iOS Framework (Arm64)
+#         run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+
+#       - name: Upload Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: Verified-iOS-Framework
+#           path: composeApp/build/bin/iosArm64/releaseFramework/ComposeApp_Framework.zip
+
+name: iOS Framework Check (SIMULATOR)
 
 on:
   push:
     branches: [ "main", "master" ]
+  workflow_dispatch: # Để ông có thể bấm chạy thủ công nếu muốn
 
 jobs:
   check-framework:
-    runs-on: macos-latest # Bắt buộc dùng macOS để có bộ biên dịch cho iOS
+    runs-on: macos-latest
 
     steps:
-      - name: Checkout Project
+      # 1. Lấy code từ repo về máy ảo
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      # 2. Cài đặt Java 17 (Bắt buộc cho AGP 8.x của ông)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17' 
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant Execute Permission
+      # 3. Cấp quyền thực thi cho file gradlew
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build iOS Framework (Arm64)
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+      # 4. Build Framework cho Simulator
+      - name: Build Simulator Framework
+        run: ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
 
-      - name: Upload Artifact
+      # 5. Build cái "vỏ" .app bằng xcodebuild
+      - name: Build .app Bundle
+        run: |
+          xcodebuild -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath build-simulator \
+            build \
+            CODE_SIGNING_ALLOWED=NO
+
+      # 6. Nén lại thành file .zip đúng chuẩn Appetize
+      - name: Zip for Appetize
+        run: |
+          APP_PATH=$(find build-simulator -name "*.app" | head -n 1)
+          # Nén file .app lại, Appetize cần file zip của cái bundle này
+          zip -r MyCinemaApp_Simulator.zip "$APP_PATH"
+
+      # 7. Đẩy file zip lên kho của GitHub để ông tải về
+      - name: Upload to GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: Verified-iOS-Framework
-          path: composeApp/build/bin/iosArm64/releaseFramework/ComposeApp_Framework.zip
+          name: Appetize-Ready-App
+          path: MyCinemaApp_Simulator.zip
