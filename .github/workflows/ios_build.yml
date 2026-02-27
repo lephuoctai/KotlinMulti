@@ -22,5 +22,8 @@ jobs:
       - name: Grant Execute Permission
         run: chmod +x gradlew
 
+      - name: List all Gradle tasks
+        run: ./gradlew :composeApp:tasks --all
+
       - name: Compile iOS Framework
         run: ./gradlew :composeApp:assembleComposeAppReleaseFrameworkIosArm64
