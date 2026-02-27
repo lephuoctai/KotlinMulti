@@ -9,5 +9,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Make gradlew executable
+        run: chmod +x gradlew
       - name: Build iOS App
         run: ./gradlew :composeApp:assembleIosReleaseFramework
