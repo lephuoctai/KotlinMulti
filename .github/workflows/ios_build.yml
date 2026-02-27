@@ -24,3 +24,9 @@ jobs:
 
       - name: Build iOS Framework (Arm64)
         run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Verified-iOS-Framework
+          path: composeApp/build/bin/iosArm64/releaseFramework/ComposeApp_Framework.zip
