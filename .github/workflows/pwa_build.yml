@@ -1,6 +1,6 @@
 name: Build KMP Web App (Wasm)
 
-# on:
+on:
 #   push:
 #     branches: [ "main", "master" ]
   workflow_dispatch:
